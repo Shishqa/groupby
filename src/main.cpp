@@ -1,7 +1,11 @@
-#include <groupby/count.hpp>
+#include <fstream>
+#include <groupby/operations/scan.hpp>
 #include <iostream>
+#include <sstream>
 
 int main(int, char* argv[]) {
-  std::cout << argv[0] << " " << count(42) << std::endl;
+  std::ifstream file(argv[1]);
+  groupby::ops::Scan(groupby::RelationIn(file),
+                     groupby::RelationOut(std::cout));
   return 0;
 }

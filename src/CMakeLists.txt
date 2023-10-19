@@ -1,4 +1,5 @@
 add_subdirectory(groupby)
+add_subdirectory(wheels)
 
 set(CMD_TARGET group)
 

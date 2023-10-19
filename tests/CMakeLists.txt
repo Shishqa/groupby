@@ -24,6 +24,7 @@ add_executable(${TEST_TARGET} ${TEST_SOURCES})
 target_link_libraries(
   ${TEST_TARGET}
   groupby_lib
+  wheels_lib
   GTest::gtest_main
 )
 
