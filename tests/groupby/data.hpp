@@ -61,8 +61,6 @@ class MonotonicData : public IGenerator {
 class TestDataFixture : public ::testing::TestWithParam<
                             std::tuple<groupby::testing::IGenerator*, size_t>> {
  public:
-  using num_t = std::int64_t;
-
   static constexpr std::string_view DATA_PATH = ".test_data.csv";
 
   static constexpr size_t N_COLUMNS = 20;

@@ -24,8 +24,8 @@ std::string UniformData::Gen(size_t, size_t) {
 //////////////////////////////////////////////////////////
 
 BigRangeData::BigRangeData()
-    : UniformData(std::numeric_limits<num_t>::min(),
-                  std::numeric_limits<num_t>::max()) {
+    : UniformData(std::numeric_limits<groupby::int_t>::min(),
+                  std::numeric_limits<groupby::int_t>::max()) {
 }
 
 BigRangeData& BigRangeData::Instance() {
@@ -68,14 +68,13 @@ void TestDataFixture::SetUp() {
   auto gen = std::get<0>(GetParam());
   auto n_rows = std::get<1>(GetParam());
 
+  groupby::Record r{};
+  r.values.reserve(N_COLUMNS);
   for (size_t i = 0; i < n_rows; ++i) {
+    r.values.clear();
     for (size_t j = 0; j < N_COLUMNS; ++j) {
-      tmp_file << gen->Gen(i, j);
-      if (j != N_COLUMNS - 1) {
-        tmp_file << groupby::Record::CSV_DELIM;
-      } else {
-        tmp_file << "\n";
-      }
+      r.values.emplace_back(gen->Gen(i, j));
     }
+    tmp_file << r;
   }
 }

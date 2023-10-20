@@ -2,18 +2,20 @@
 
 #include <istream>
 #include <ostream>
+#include <variant>
 #include <vector>
+
+#include "value.hpp"
 
 namespace groupby {
 
 struct Record {
- public:
   static constexpr char CSV_DELIM = ',';
 
-  friend std::istream& operator>>(std::istream& in, Record& r);
-  friend std::ostream& operator<<(std::ostream& out, const Record& r);
-
-  std::vector<std::string> values;
+  std::vector<Value> values;
 };
+
+std::istream& operator>>(std::istream& in, Record& r);
+std::ostream& operator<<(std::ostream& out, const Record& r);
 
 }  // namespace groupby
