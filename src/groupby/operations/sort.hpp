@@ -14,9 +14,7 @@ class SortedScanOperation {
   SortedScanOperation(RelationIn reader, size_t key_idx);
 
   SortedScanOperation(const SortedScanOperation& other) = delete;
-
-  SortedScanOperation(SortedScanOperation&& other);
-  SortedScanOperation& operator=(SortedScanOperation&& other);
+  SortedScanOperation(SortedScanOperation&& other) = delete;
 
   Record& operator*();
   Record* operator->();
@@ -28,15 +26,9 @@ class SortedScanOperation {
  private:
   void Prepare(RelationIn reader);
 
-  struct Cursor {
-    std::ifstream file;
-    ScanOperation reader;
-
-    Cursor(std::ifstream f);
-  };
-
-  std::vector<Cursor> cursors_;
-  std::priority_queue<std::tuple<int_t, size_t>> order_;
+  std::vector<std::fstream> files_;
+  std::vector<ScanOperation> cursors_;
+  std::priority_queue<std::pair<int_t, size_t>> order_;
   size_t key_idx_;
 };
 

@@ -13,9 +13,7 @@ set(DEBUG_FLAGS " \
   -g \
   -O3 \
   -Wconversion \
-  -Wlogical-op \
-  -Wshift-overflow=2 \
-  -Wduplicated-cond \
+  -Wshift-overflow \
   -Wno-unused-parameter \
   -Wcast-qual -Wcast-align \
   -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC \

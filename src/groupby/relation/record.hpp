@@ -11,7 +11,6 @@ namespace groupby {
 
 struct Record {
   static constexpr char CSV_DELIM = ',';
-
   std::vector<Value> values;
 };
 

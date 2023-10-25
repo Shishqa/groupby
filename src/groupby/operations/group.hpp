@@ -17,6 +17,9 @@ class GroupOperation {
 
   GroupOperation(size_t key_idx, size_t agg_idx, AggregatorList aggs);
 
+  GroupOperation(const GroupOperation& other) = delete;
+  GroupOperation(GroupOperation&& other) = delete;
+
  protected:
   size_t key_idx_;
   size_t agg_idx_;
@@ -25,7 +28,7 @@ class GroupOperation {
 
 class SortedGroupOperation : public GroupOperation {
  public:
-  SortedGroupOperation(SortedScanOperation reader, size_t key_idx,
+  SortedGroupOperation(SortedScanOperation& reader, size_t key_idx,
                        size_t agg_idx, AggregatorList aggs);
 
   Record& operator*();
@@ -39,12 +42,12 @@ class SortedGroupOperation : public GroupOperation {
   void ConsumeRecord();
 
   Record r_;
-  SortedScanOperation reader_;
+  SortedScanOperation& reader_;
 };
 
 class HashedGroupOperation : public GroupOperation {
  public:
-  HashedGroupOperation(ScanOperation reader, size_t key_idx, size_t agg_idx,
+  HashedGroupOperation(ScanOperation& reader, size_t key_idx, size_t agg_idx,
                        AggregatorList aggs);
 
   Record& operator*();
@@ -59,7 +62,7 @@ class HashedGroupOperation : public GroupOperation {
 
   using RecordBuckets = std::unordered_map<int_t, Record>;
 
-  ScanOperation reader_;
+  ScanOperation& reader_;
   RecordBuckets::iterator curr_;
   RecordBuckets records_;
 };

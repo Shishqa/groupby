@@ -2,35 +2,16 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 
 #include "groupby/memory/block_manager.hpp"
 #include "groupby/relation/value.hpp"
 
 namespace groupby {
 
-SortedScanOperation::Cursor::Cursor(std::ifstream f)
-    : file(std::move(f)), reader(RelationIn(file)) {
-}
-
 SortedScanOperation::SortedScanOperation(RelationIn reader, size_t key_idx)
     : cursors_(), key_idx_(key_idx) {
   Prepare(reader);
-}
-
-SortedScanOperation::SortedScanOperation(SortedScanOperation&& other)
-    : cursors_(std::move(other.cursors_)),
-      order_(std::move(other.order_)),
-      key_idx_(other.key_idx_) {
-}
-
-SortedScanOperation& SortedScanOperation::operator=(
-    SortedScanOperation&& other) {
-  if (this != &other) {
-    cursors_ = std::move(other.cursors_);
-    order_ = std::move(other.order_);
-    key_idx_ = other.key_idx_;
-  }
-  return *this;
 }
 
 void SortedScanOperation::Prepare(RelationIn reader) {
@@ -39,29 +20,36 @@ void SortedScanOperation::Prepare(RelationIn reader) {
            std::get<int_t>(b.values[key_idx]);
   };
 
-  size_t n_cursors = 0;
   {
     auto b = BlockManager::Instance().Allocate(BlockManager::M);
-    while (reader != RelationIn()) {
-      reader = BlockRead(*b, reader);
+    assert(b->size() == 0 && b->capacity() > 0);
+    for (size_t i = 0; reader != RelationIn(); ++i) {
+      BlockRead(*b, reader);
       std::sort(b->begin(), b->end(), cmp);
-      std::ofstream file(".sorted-" + std::to_string(n_cursors++));
-      BlockWrite(*b, RelationOut(file));
+      assert(i < 2);
+
+      auto& file = files_.emplace_back(
+          ".sorted-" + std::to_string(i),
+          std::fstream::in | std::fstream::out | std::fstream::trunc);
+
+      RelationOut out(file);
+      BlockWrite(*b, out);
+      file.flush();
+      file.seekg(0);
     }
   }
 
-  assert(n_cursors <= BlockManager::M - 1);
+  assert(files_.size() <= BlockManager::M - 1);
 
-  for (size_t i = 0; i < n_cursors; ++i) {
-    std::ifstream file(".sorted-" + std::to_string(i));
-    auto& c = cursors_.emplace_back(std::move(file));
-    order_.emplace(std::get<int_t>(c.reader->values.at(key_idx_)), i);
+  for (size_t i = 0; i < files_.size(); ++i) {
+    auto& c = cursors_.emplace_back(RelationIn(files_[i]));
+    order_.emplace(std::get<int_t>(c->values.at(key_idx_)), i);
   }
 }
 
 Record& SortedScanOperation::operator*() {
   auto& top = order_.top();
-  return *cursors_[std::get<1>(top)].reader;
+  return *cursors_[top.second];
 }
 
 Record* SortedScanOperation::operator->() {
@@ -72,11 +60,14 @@ SortedScanOperation& SortedScanOperation::operator++() {
   auto top = order_.top();
   order_.pop();
 
-  auto& cursor = cursors_[std::get<1>(top)];
-  if (!cursor.reader.End()) {
-    ++cursor.reader;
-    order_.emplace(std::get<int_t>(cursor.reader->values.at(key_idx_)),
-                   std::get<0>(top));
+  auto& cursor = cursors_[top.second];
+  if (!cursor.End()) {
+    ++cursor;
+    if (!cursor.End()) {
+      order_.emplace(std::get<int_t>(cursor->values.at(key_idx_)), top.second);
+    } else {
+      std::remove((".sorted-" + std::to_string(top.second)).data());
+    }
   }
   return *this;
 }

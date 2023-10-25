@@ -1,5 +1,6 @@
 #include "block_manager.hpp"
 
+#include <cassert>
 #include <new>
 
 namespace groupby {
@@ -13,14 +14,16 @@ BlockManager& BlockManager::Instance() {
 }
 
 BlockManager::BlockHandle BlockManager::Allocate(size_t m) {
+  assert(m > 0);
   if (size_ + m > M) {
     throw std::bad_alloc();
   }
   size_ += m;
 
-  Block b{};
-  b.reserve(m * B_SIZE);
-  return blocks_.emplace(blocks_.end(), std::move(b));
+  BlockManager::BlockHandle b(blocks_.emplace(blocks_.end()));
+  b->reserve(m * B_SIZE);
+  assert(b->capacity() > 0);
+  return b;
 }
 
 void BlockManager::Deallocate(std::list<Block>::iterator b) {
@@ -33,15 +36,13 @@ BlockManager::BlockHandle::BlockHandle(std::list<Block>::iterator handle)
 }
 
 BlockManager::BlockHandle::BlockHandle(BlockManager::BlockHandle&& other)
-    : handle_(other.handle_) {
-  other.handle_.reset();
+    : handle_(std::move(other.handle_)) {
 }
 
 BlockManager::BlockHandle& BlockManager::BlockHandle::operator=(
     BlockManager::BlockHandle&& other) {
   if (this != &other) {
     handle_ = std::move(other.handle_);
-    other.handle_.reset();
   }
   return *this;
 }

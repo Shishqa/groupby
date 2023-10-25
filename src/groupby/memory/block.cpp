@@ -2,25 +2,27 @@
 
 #include "block.hpp"
 
+#include <cassert>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace groupby {
 ///////////////////////////////////////////////////////////////////////////////
 
-RelationIn BlockRead(Block& b, RelationIn in) {
+void BlockRead(Block& b, RelationIn& in) {
   auto end = RelationIn();
   const size_t capacity = b.capacity();
+  assert(capacity > 0);
   b.clear();
   for (; in != end && b.size() < capacity; ++in) {
     b.emplace_back(std::move(*in));
   }
-  return in;
 }
 
-RelationOut BlockWrite(const Block& b, RelationOut out) {
+void BlockWrite(const Block& b, RelationOut& out) {
+  assert(b.size() > 0);
   for (size_t i = 0; i < b.size(); ++i, ++out) {
     *out = b[i];
   }
-  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

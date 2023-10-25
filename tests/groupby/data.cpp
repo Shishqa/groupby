@@ -35,7 +35,7 @@ BigRangeData& BigRangeData::Instance() {
 
 //////////////////////////////////////////////////////////
 
-SmallRangeData::SmallRangeData() : UniformData(0, 10) {
+SmallRangeData::SmallRangeData() : UniformData(1, 10) {
 }
 
 SmallRangeData& SmallRangeData::Instance() {

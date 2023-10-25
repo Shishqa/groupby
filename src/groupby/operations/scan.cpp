@@ -12,7 +12,7 @@ ScanOperation::ScanOperation(RelationIn reader, size_t b_size)
     : reader_(std::move(reader)),
       b_(BlockManager::Instance().Allocate(b_size)),
       curr_(0) {
-  reader_ = BlockRead(*b_, reader_);
+  BlockRead(*b_, reader_);
 }
 
 ScanOperation::ScanOperation(ScanOperation&& other)
@@ -41,7 +41,7 @@ Record* ScanOperation::operator->() {
 ScanOperation& ScanOperation::operator++() {
   if (!End()) {
     if (++curr_ == b_->size() && reader_ != RelationIn()) {
-      reader_ = BlockRead(*b_, reader_);
+      BlockRead(*b_, reader_);
       curr_ = 0;
     }
   }

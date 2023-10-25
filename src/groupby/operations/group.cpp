@@ -13,11 +13,10 @@ GroupOperation::GroupOperation(size_t key_idx, size_t agg_idx,
 
 //
 
-SortedGroupOperation::SortedGroupOperation(SortedScanOperation reader,
+SortedGroupOperation::SortedGroupOperation(SortedScanOperation& reader,
                                            size_t key_idx, size_t agg_idx,
                                            AggregatorList aggs)
-    : GroupOperation(key_idx, agg_idx, std::move(aggs)),
-      reader_(std::move(reader)) {
+    : GroupOperation(key_idx, agg_idx, std::move(aggs)), reader_(reader) {
   ConsumeRecord();
 }
 
@@ -61,10 +60,10 @@ bool SortedGroupOperation::End() {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-HashedGroupOperation::HashedGroupOperation(ScanOperation reader, size_t key_idx,
-                                           size_t agg_idx, AggregatorList aggs)
-    : GroupOperation(key_idx, agg_idx, std::move(aggs)),
-      reader_(std::move(reader)) {
+HashedGroupOperation::HashedGroupOperation(ScanOperation& reader,
+                                           size_t key_idx, size_t agg_idx,
+                                           AggregatorList aggs)
+    : GroupOperation(key_idx, agg_idx, std::move(aggs)), reader_(reader) {
   ConsumeAll();
 }
 
@@ -72,7 +71,7 @@ void HashedGroupOperation::ConsumeAll() {
   for (; !reader_.End(); ++reader_) {
     auto key = std::get<int_t>(reader_->values.at(key_idx_));
     if (!records_.count(key)) {
-      records_[key] = {};
+      records_[key].values.clear();
       for (auto& agg : aggs_) {
         auto& a = records_[key].values.emplace_back(agg->Init());
         agg->Aggregate(a, reader_->values.at(agg_idx_));

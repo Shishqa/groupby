@@ -9,7 +9,7 @@ namespace groupby {
 
 using Block = std::vector<Record>;
 
-RelationIn BlockRead(Block& b, RelationIn in);
-RelationOut BlockWrite(const Block& b, RelationOut out);
+void BlockRead(Block& b, RelationIn& in);
+void BlockWrite(const Block& b, RelationOut& out);
 
 }  // namespace groupby

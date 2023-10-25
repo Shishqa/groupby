@@ -31,9 +31,9 @@ int main(int argc, char* argv[]) {
   std::ifstream file(argv[1]);
 
   groupby::MaxAggregator agg{};
-  groupby::SortedGroupOperation group(
-      groupby::SortedScanOperation(groupby::RelationIn(file), key_idx), key_idx,
-      agg_idx, {&agg});
+
+  groupby::SortedScanOperation scan(groupby::RelationIn(file), key_idx);
+  groupby::SortedGroupOperation group(scan, key_idx, agg_idx, {&agg});
 
   while (!group.End()) {
     std::cout << *group;
