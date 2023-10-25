@@ -1,13 +1,36 @@
 #pragma once
 
-#include <iterator>
+#include "groupby/relation/value.hpp"
 
-#include "groupby/relation/relation.hpp"
+namespace groupby {
 
-namespace groupby::ops {
+class Aggregator {
+ protected:
+  Aggregator() = default;
 
-using Aggregator =
+ public:
+  virtual ~Aggregator() = default;
 
-    void Scan(RelationIn in, RelationOut out);
+  virtual Value Init() = 0;
+  virtual void Aggregate(Value& a, const Value& b) = 0;
+};
 
-}  // namespace groupby::ops
+class CountAggregator : public Aggregator {
+ public:
+  virtual Value Init() override;
+  virtual void Aggregate(Value& a, const Value& b) override;
+};
+
+class MinAggregator : public Aggregator {
+ public:
+  virtual Value Init() override;
+  virtual void Aggregate(Value& a, const Value& b) override;
+};
+
+class MaxAggregator : public Aggregator {
+ public:
+  virtual Value Init() override;
+  virtual void Aggregate(Value& a, const Value& v) override;
+};
+
+}  // namespace groupby

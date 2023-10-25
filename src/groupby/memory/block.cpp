@@ -1,28 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////
+
 #include "block.hpp"
 
-#include <iostream>
-
+///////////////////////////////////////////////////////////////////////////////
 namespace groupby {
+///////////////////////////////////////////////////////////////////////////////
 
-Block::Block() {
-  records.reserve(SIZE);
-}
-
-RelationIn Block::read(RelationIn in) {
-  records.clear();
+RelationIn BlockRead(Block& b, RelationIn in) {
   auto end = RelationIn();
-  for (; in != end && records.size() < SIZE; ++in) {
-    records.emplace_back(std::move(*in));
+  const size_t capacity = b.capacity();
+  b.clear();
+  for (; in != end && b.size() < capacity; ++in) {
+    b.emplace_back(std::move(*in));
   }
   return in;
 }
 
-RelationOut Block::write(RelationOut out) {
-  for (size_t i = 0; i < records.size(); ++i, ++out) {
-    *out = records[i];
+RelationOut BlockWrite(const Block& b, RelationOut out) {
+  for (size_t i = 0; i < b.size(); ++i, ++out) {
+    *out = b[i];
   }
-  records.clear();
   return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 }  // namespace groupby
+///////////////////////////////////////////////////////////////////////////////

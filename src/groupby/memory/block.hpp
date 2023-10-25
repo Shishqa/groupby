@@ -7,16 +7,9 @@
 
 namespace groupby {
 
-class Block {
- public:
-  static constexpr size_t SIZE = 1024;
+using Block = std::vector<Record>;
 
-  std::vector<Record> records;
-
-  explicit Block();
-
-  RelationIn read(RelationIn in);
-  RelationOut write(RelationOut out);
-};
+RelationIn BlockRead(Block& b, RelationIn in);
+RelationOut BlockWrite(const Block& b, RelationOut out);
 
 }  // namespace groupby

@@ -10,9 +10,10 @@
 
 TEST_P(TestDataFixture, TestScan) {
   std::ifstream file(TestDataFixture::DATA_PATH.data());
-
-  groupby::ops::Scan(groupby::RelationIn(file),
-                     groupby::RelationOut(std::cerr));
+  groupby::ScanOperation scan{groupby::RelationIn(file)};
+  for (; !scan.End(); ++scan) {
+    std::cerr << *scan;
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
