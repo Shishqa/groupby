@@ -1,8 +1,8 @@
 #include "record.hpp"
 
 #include <sstream>
-#include <wheels/string.hpp>
 
+#include "groupby/utils/string.hpp"
 #include "value.hpp"
 
 namespace groupby {
@@ -12,7 +12,7 @@ std::istream& operator>>(std::istream& in, Record& r) {
   auto& res = std::getline(in, line);
 
   r.values.clear();
-  for (auto str : wheels::str::Split(line, Record::CSV_DELIM)) {
+  for (auto str : Split(line, Record::CSV_DELIM)) {
     std::istringstream ss(std::move(str));
     Value v{};
     ss >> v;

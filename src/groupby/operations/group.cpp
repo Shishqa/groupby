@@ -1,14 +1,16 @@
 #include "group.hpp"
 
 #include "aggregate.hpp"
-#include "groupby/memory/block_manager.hpp"
 #include "sort.hpp"
 
 namespace groupby {
 
-GroupOperation::GroupOperation(size_t key_idx, size_t agg_idx,
-                               AggregatorList aggs)
-    : key_idx_(key_idx), agg_idx_(agg_idx), aggs_(std::move(aggs)) {
+GroupOperation::GroupOperation(BaseOperation& reader, size_t key_idx,
+                               size_t agg_idx, AggregatorList aggs)
+    : key_idx_(key_idx),
+      agg_idx_(agg_idx),
+      aggs_(std::move(aggs)),
+      reader_(reader) {
 }
 
 //
@@ -16,7 +18,7 @@ GroupOperation::GroupOperation(size_t key_idx, size_t agg_idx,
 SortedGroupOperation::SortedGroupOperation(SortedScanOperation& reader,
                                            size_t key_idx, size_t agg_idx,
                                            AggregatorList aggs)
-    : GroupOperation(key_idx, agg_idx, std::move(aggs)), reader_(reader) {
+    : GroupOperation(reader, key_idx, agg_idx, std::move(aggs)), end_(false) {
   ConsumeRecord();
 }
 
@@ -26,13 +28,12 @@ void SortedGroupOperation::ConsumeRecord() {
   /* aggs + key */
   r_.values.reserve(aggs_.size() + 1);
   for (auto& agg : aggs_) {
-    auto& a = r_.values.emplace_back(agg->Init());
-    agg->Aggregate(a, reader_->values.at(agg_idx_));
+    r_.values.emplace_back(agg->Init());
   }
   auto key = reader_->values.at(key_idx_);
-  r_.values.emplace_back(std::move(key));
+  r_.values.emplace_back(key);
 
-  while (!(++reader_).End() && reader_->values.at(key_idx_) == key) {
+  for (; !reader_.End() && reader_->values.at(key_idx_) == key; ++reader_) {
     for (size_t i = 0; i < aggs_.size(); ++i) {
       aggs_[i]->Aggregate(r_.values[i], reader_->values.at(agg_idx_));
     }
@@ -48,14 +49,16 @@ Record* SortedGroupOperation::operator->() {
 }
 
 SortedGroupOperation& SortedGroupOperation::operator++() {
-  if (!End()) {
+  if (reader_.End()) {
+    end_ = true;
+  } else {
     ConsumeRecord();
   }
   return *this;
 }
 
 bool SortedGroupOperation::End() {
-  return reader_.End();
+  return end_;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +66,7 @@ bool SortedGroupOperation::End() {
 HashedGroupOperation::HashedGroupOperation(ScanOperation& reader,
                                            size_t key_idx, size_t agg_idx,
                                            AggregatorList aggs)
-    : GroupOperation(key_idx, agg_idx, std::move(aggs)), reader_(reader) {
+    : GroupOperation(reader, key_idx, agg_idx, std::move(aggs)) {
   ConsumeAll();
 }
 

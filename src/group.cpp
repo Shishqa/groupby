@@ -1,7 +1,5 @@
 #include <fstream>
-#include <groupby/operations/aggregate.hpp>
-#include <groupby/operations/group.hpp>
-#include <groupby/operations/sort.hpp>
+#include <groupby/request.hpp>
 #include <iostream>
 #include <sstream>
 #include <string_view>
@@ -28,17 +26,10 @@ int main(int argc, char* argv[]) {
   size_t key_idx = std::strtoull(argv[2], nullptr, 10);
   size_t agg_idx = std::strtoull(argv[3], nullptr, 10);
 
-  std::ifstream file(argv[1]);
-
-  groupby::MaxAggregator agg{};
-
-  groupby::SortedScanOperation scan(groupby::RelationIn(file), key_idx);
-  groupby::SortedGroupOperation group(scan, key_idx, agg_idx, {&agg});
-
-  while (!group.End()) {
-    std::cout << *group;
-    ++group;
-  }
+  groupby::RequestBuilder()
+      .From(argv[1])
+      .GroupBy(key_idx, agg_idx, argv[4])
+      .Select(std::cout);
 
   return 0;
 }

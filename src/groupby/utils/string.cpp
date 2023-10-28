@@ -1,6 +1,6 @@
 #include "string.hpp"
 
-namespace wheels::str {
+namespace groupby {
 
 std::vector<std::string> Split(std::string_view s, char c) {
   std::vector<std::string> res{};
@@ -26,4 +26,4 @@ std::string Join(const std::vector<std::string>& v, char c) {
   return res;
 }
 
-}  // namespace wheels::str
+}  // namespace groupby

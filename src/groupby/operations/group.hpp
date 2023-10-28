@@ -4,18 +4,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include "groupby/memory/block_manager.hpp"
 #include "groupby/operations/aggregate.hpp"
 #include "groupby/operations/scan.hpp"
 #include "groupby/operations/sort.hpp"
 
 namespace groupby {
 
-class GroupOperation {
+class GroupOperation : public BaseOperation {
  public:
   using AggregatorList = std::vector<Aggregator*>;
 
-  GroupOperation(size_t key_idx, size_t agg_idx, AggregatorList aggs);
+  GroupOperation(BaseOperation& reader, size_t key_idx, size_t agg_idx,
+                 AggregatorList aggs);
 
   GroupOperation(const GroupOperation& other) = delete;
   GroupOperation(GroupOperation&& other) = delete;
@@ -24,6 +24,7 @@ class GroupOperation {
   size_t key_idx_;
   size_t agg_idx_;
   AggregatorList aggs_;
+  BaseOperation& reader_;
 };
 
 class SortedGroupOperation : public GroupOperation {
@@ -31,18 +32,18 @@ class SortedGroupOperation : public GroupOperation {
   SortedGroupOperation(SortedScanOperation& reader, size_t key_idx,
                        size_t agg_idx, AggregatorList aggs);
 
-  Record& operator*();
-  Record* operator->();
+  Record& operator*() override;
+  Record* operator->() override;
 
-  SortedGroupOperation& operator++();
+  SortedGroupOperation& operator++() override;
 
-  bool End();
+  bool End() override;
 
  private:
   void ConsumeRecord();
 
   Record r_;
-  SortedScanOperation& reader_;
+  bool end_;
 };
 
 class HashedGroupOperation : public GroupOperation {
@@ -50,19 +51,18 @@ class HashedGroupOperation : public GroupOperation {
   HashedGroupOperation(ScanOperation& reader, size_t key_idx, size_t agg_idx,
                        AggregatorList aggs);
 
-  Record& operator*();
-  Record* operator->();
+  Record& operator*() override;
+  Record* operator->() override;
 
-  HashedGroupOperation& operator++();
+  HashedGroupOperation& operator++() override;
 
-  bool End();
+  bool End() override;
 
  private:
   void ConsumeAll();
 
   using RecordBuckets = std::unordered_map<int_t, Record>;
 
-  ScanOperation& reader_;
   RecordBuckets::iterator curr_;
   RecordBuckets records_;
 };
