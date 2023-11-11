@@ -7,18 +7,17 @@
 
 namespace groupby {
 
+Value Record::Get(size_t idx) const {
+  std::istringstream ss{values.at(idx)};
+  Value v{};
+  ss >> v;
+  return v;
+}
+
 std::istream& operator>>(std::istream& in, Record& r) {
   std::string line{};
   auto& res = std::getline(in, line);
-
-  r.values.clear();
-  for (auto str : Split(line, Record::CSV_DELIM)) {
-    std::istringstream ss(std::move(str));
-    Value v{};
-    ss >> v;
-    r.values.emplace_back(std::move(v));
-  }
-
+  r.values = Split(line, Record::CSV_DELIM);
   return res;
 }
 

@@ -11,7 +11,9 @@ namespace groupby {
 
 struct Record {
   static constexpr char CSV_DELIM = ',';
-  std::vector<Value> values;
+  std::vector<std::string> values;
+
+  [[nodiscard]] Value Get(size_t idx) const;
 };
 
 std::istream& operator>>(std::istream& in, Record& r);

@@ -16,10 +16,10 @@ TEST_P(TestSort, Basic) {
   // sort by the first key.
   groupby::SortedScanOperation sort{file, 0};
 
-  groupby::int_t prev_value = std::get<groupby::int_t>(sort->values[0]);
+  groupby::int_t prev_value = std::get<groupby::int_t>(sort->Get(0));
   size_t cnt = 0;
   for (; !sort.End(); ++sort, ++cnt) {
-    groupby::int_t curr_value = std::get<groupby::int_t>(sort->values[0]);
+    groupby::int_t curr_value = std::get<groupby::int_t>(sort->Get(0));
     ASSERT_LE(prev_value, curr_value);
     prev_value = curr_value;
   }

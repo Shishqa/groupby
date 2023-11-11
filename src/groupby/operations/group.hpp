@@ -60,11 +60,13 @@ class HashedGroupOperation : public GroupOperation {
 
  private:
   void ConsumeAll();
+  void ConsumeRecord();
 
-  using RecordBuckets = std::unordered_map<int_t, Record>;
+  using RecordBuckets = std::unordered_map<int_t, std::vector<Value>>;
 
   RecordBuckets::iterator curr_;
   RecordBuckets records_;
+  Record record_;
 };
 
 }  // namespace groupby

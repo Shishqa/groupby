@@ -26,10 +26,10 @@ TEST_P(TestHashedGroup, GroupCount) {
   groupby::int_t cnt = 0;
   std::unordered_set<groupby::int_t> seen_keys{};
   for (; !group.End(); ++group) {
-    auto key = std::get<groupby::int_t>(group->values.at(1));
+    auto key = std::get<groupby::int_t>(group->Get(0));
     ASSERT_NE(1, seen_keys.count(key));
     seen_keys.insert(key);
-    cnt += std::get<groupby::int_t>(group->values.at(0));
+    cnt += std::get<groupby::int_t>(group->Get(1));
   }
   ASSERT_EQ(cnt, 10000);
 }
@@ -42,7 +42,7 @@ TEST_P(TestHashedGroup, GroupMax) {
 
   std::unordered_set<groupby::int_t> seen_keys{};
   for (; !group.End(); ++group) {
-    auto key = std::get<groupby::int_t>(group->values.at(1));
+    auto key = std::get<groupby::int_t>(group->Get(0));
     ASSERT_NE(1, seen_keys.count(key));
     seen_keys.insert(key);
   }
@@ -66,12 +66,27 @@ TEST_P(TestSortedGroup, GroupCount) {
   groupby::int_t cnt = 0;
   std::unordered_set<groupby::int_t> seen_keys{};
   for (; !group.End(); ++group) {
-    auto key = std::get<groupby::int_t>(group->values.at(1));
+    auto key = std::get<groupby::int_t>(group->Get(0));
     ASSERT_NE(1, seen_keys.count(key));
     seen_keys.insert(key);
-    cnt += std::get<groupby::int_t>(group->values.at(0));
+    cnt += std::get<groupby::int_t>(group->Get(1));
   }
   ASSERT_EQ(cnt, 600'000);
+}
+
+TEST_P(TestSortedGroup, GroupMax) {
+  std::ifstream file(TestDataFixture::DATA_PATH.data());
+  groupby::MaxAggregator agg{};
+
+  groupby::SortedScanOperation scan{file, 0};
+  groupby::SortedGroupOperation group{scan, 0, 1, {&agg}};
+
+  std::unordered_set<groupby::int_t> seen_keys{};
+  for (; !group.End(); ++group) {
+    auto key = std::get<groupby::int_t>(group->Get(0));
+    ASSERT_NE(1, seen_keys.count(key));
+    seen_keys.insert(key);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
