@@ -16,7 +16,13 @@ make
 ./bin/group <path> <key_idx> <agg_idx> <agg_type>
 ```
 
-## Тесты
+### Генерация данных
+
+```
+./bin/generate
+```
+
+### Тесты
 
 ```
 cd tests
